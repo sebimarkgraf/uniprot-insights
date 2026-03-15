@@ -30,7 +30,7 @@ class UniProtClient:
 
     def _wait_before_retry(self, attempt: int) -> None:
         jitter = random.uniform(0.0, 0.2)
-        sleep_for = (2 ** attempt) * self.backoff_seconds + jitter
+        sleep_for = (2**attempt) * self.backoff_seconds + jitter
         time.sleep(sleep_for)
 
     def fetch_entry(self, accession: str) -> Dict:
@@ -62,7 +62,9 @@ class UniProtClient:
                 raise UniProtNotFoundError(f"UniProt accession not found: {accession}")
 
             if response.status_code in {429} or 500 <= response.status_code < 600:
-                last_exc = UniProtAPIError(f"Transient UniProt error ({response.status_code}) for {accession}")
+                last_exc = UniProtAPIError(
+                    f"Transient UniProt error ({response.status_code}) for {accession}"
+                )
                 if attempt < self.max_retries - 1:
                     self._wait_before_retry(attempt)
                     continue

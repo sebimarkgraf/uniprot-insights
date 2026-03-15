@@ -57,15 +57,29 @@ def _normalize_whitespace(value: str) -> str:
 
 
 def extract_entry(raw_json: Dict[str, Any]) -> ExtractedEntry:
-    accession = str(raw_json.get("primaryAccession") or raw_json.get("accession", "") or "")
-    entry_name = str(raw_json.get("uniProtkbId") or raw_json.get("proteinName", "") or accession)
+    accession = str(
+        raw_json.get("primaryAccession") or raw_json.get("accession", "") or ""
+    )
+    entry_name = str(
+        raw_json.get("uniProtkbId") or raw_json.get("proteinName", "") or accession
+    )
 
-    protein_description = raw_json.get("proteinDescription", {}) if isinstance(raw_json.get("proteinDescription"), dict) else {}
+    protein_description = (
+        raw_json.get("proteinDescription", {})
+        if isinstance(raw_json.get("proteinDescription"), dict)
+        else {}
+    )
     protein_names: List[str] = []
 
     recommended = protein_description.get("recommendedName")
     if isinstance(recommended, dict):
-        protein_names.extend(_collect_name_entries([recommended.get("fullName")] if isinstance(recommended.get("fullName"), dict) else []))
+        protein_names.extend(
+            _collect_name_entries(
+                [recommended.get("fullName")]
+                if isinstance(recommended.get("fullName"), dict)
+                else []
+            )
+        )
         protein_names.extend(_collect_name_entries(recommended.get("shortNames")))
 
     alternative = protein_description.get("alternativeNames")
@@ -127,7 +141,9 @@ def extract_entry(raw_json: Dict[str, Any]) -> ExtractedEntry:
         *comments,
         entry_name,
     ]
-    combined_text = _normalize_whitespace(" ".join(part.strip() for part in all_text if isinstance(part, str)))
+    combined_text = _normalize_whitespace(
+        " ".join(part.strip() for part in all_text if isinstance(part, str))
+    )
 
     return ExtractedEntry(
         accession=accession,

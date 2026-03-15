@@ -21,7 +21,9 @@ def _load_fixture(name: str) -> dict:
     return json.loads((FIXTURES_DIR / name).read_text(encoding="utf-8"))
 
 
-def _build_client_with_fixtures(fixtures: dict[str, dict], hits: dict[str, int] | None = None) -> UniProtClient:
+def _build_client_with_fixtures(
+    fixtures: dict[str, dict], hits: dict[str, int] | None = None
+) -> UniProtClient:
     hits_dict = hits if hits is not None else {"count": 0}
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -32,11 +34,15 @@ def _build_client_with_fixtures(fixtures: dict[str, dict], hits: dict[str, int] 
             return httpx.Response(status_code=404, json={"detail": "missing"})
         return httpx.Response(status_code=200, json=payload)
 
-    return UniProtClient(http_client=httpx.Client(transport=httpx.MockTransport(handler)))
+    return UniProtClient(
+        http_client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
 
 
 @pytest.mark.integration
-def test_classify_id_full_pipeline_writes_csv_to_stdout(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_classify_id_full_pipeline_writes_csv_to_stdout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fixtures = {
         "P22222": _load_fixture("omega5_gliadin.json"),
         "Q33333": _load_fixture("lmw_glutenin.json"),
@@ -59,7 +65,9 @@ def test_classify_id_full_pipeline_writes_csv_to_stdout(monkeypatch: pytest.Monk
     assert rows[0]["annotation_error"] == ""
 
 
-def test_classify_id_default_behavior_continues_on_missing_accession(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_classify_id_default_behavior_continues_on_missing_accession(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fixtures = {
         "P22222": _load_fixture("omega5_gliadin.json"),
     }
@@ -76,7 +84,9 @@ def test_classify_id_default_behavior_continues_on_missing_accession(monkeypatch
     assert rows[1]["annotation_error"] != ""
 
 
-def test_classify_id_fail_fast_rejects_missing_accession(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_classify_id_fail_fast_rejects_missing_accession(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fixtures = {
         "P22222": _load_fixture("omega5_gliadin.json"),
     }
@@ -88,7 +98,9 @@ def test_classify_id_fail_fast_rejects_missing_accession(monkeypatch: pytest.Mon
 
 
 @pytest.mark.integration
-def test_classify_id_with_cache_reuses_same_accession_once(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_classify_id_with_cache_reuses_same_accession_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fixtures = {"P22222": _load_fixture("omega5_gliadin.json")}
     hits: dict[str, int] = {"count": 0}
     client = _build_client_with_fixtures(fixtures, hits=hits)
@@ -104,7 +116,9 @@ def test_classify_id_with_cache_reuses_same_accession_once(monkeypatch: pytest.M
     assert hits["count"] == 1
 
 
-def test_classify_file_supports_tsv_delimiter_and_no_header(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_classify_file_supports_tsv_delimiter_and_no_header(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     fixtures = {"P22222": _load_fixture("omega5_gliadin.json")}
     client = _build_client_with_fixtures(fixtures)
     monkeypatch.setattr(cli, "_build_client", lambda *_args, **_kwargs: client)
@@ -145,7 +159,9 @@ def test_classify_file_reads_column_and_writes_output_file(
     monkeypatch.setattr(cli, "_build_client", lambda *_args, **_kwargs: client)
 
     input_csv = tmp_path / "input.csv"
-    input_csv.write_text("id,description\nP22222,first\nQ33333,second\n\n", encoding="utf-8")
+    input_csv.write_text(
+        "id,description\nP22222,first\nQ33333,second\n\n", encoding="utf-8"
+    )
     output_csv = tmp_path / "classified.csv"
 
     result = RUNNER.invoke(
@@ -170,7 +186,9 @@ def test_classify_file_reads_column_and_writes_output_file(
 
 
 @pytest.mark.integration
-def test_dump_entry_returns_json_for_known_accession(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_dump_entry_returns_json_for_known_accession(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fixtures = {"P22222": _load_fixture("omega5_gliadin.json")}
     client = _build_client_with_fixtures(fixtures)
     monkeypatch.setattr(cli, "_build_client", lambda *_args, **_kwargs: client)

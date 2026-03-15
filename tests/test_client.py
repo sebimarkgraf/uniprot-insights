@@ -61,7 +61,9 @@ def test_fetch_entry_retries_and_recovers(monkeypatch: pytest.MonkeyPatch) -> No
     assert calls["count"] == 2
 
 
-def test_fetch_entry_retries_and_fails_on_persistent_5xx(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_fetch_entry_retries_and_fails_on_persistent_5xx(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     calls = {"count": 0}
 
     def handler(_request: httpx.Request) -> httpx.Response:

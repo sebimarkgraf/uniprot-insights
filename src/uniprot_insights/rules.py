@@ -35,7 +35,9 @@ def _validate_rules_item(item: Any, index: int) -> Rule:
         raise RuleValidationError(f"Rule at position {index} must be a mapping")
     missing = RULE_REQUIRED_FIELDS - set(item)
     if missing:
-        raise RuleValidationError(f"Rule at position {index} missing fields: {sorted(missing)}")
+        raise RuleValidationError(
+            f"Rule at position {index} missing fields: {sorted(missing)}"
+        )
 
     name = item.get("name")
     if not isinstance(name, str) or not name.strip():
@@ -60,29 +62,39 @@ def _validate_rules_item(item: Any, index: int) -> Rule:
         try:
             re.compile(organism_regex, flags=re.IGNORECASE)
         except re.error as exc:
-            raise RuleValidationError(f"Rule {name} has invalid organism_regex: {exc}") from exc
+            raise RuleValidationError(
+                f"Rule {name} has invalid organism_regex: {exc}"
+            ) from exc
 
     include_patterns = item.get("include_patterns")
     if not isinstance(include_patterns, list) or not include_patterns:
         raise RuleValidationError(f"Rule {name} has invalid include_patterns")
     for pattern in include_patterns:
         if not isinstance(pattern, str):
-            raise RuleValidationError(f"Rule {name} includes non-string include_patterns value")
+            raise RuleValidationError(
+                f"Rule {name} includes non-string include_patterns value"
+            )
         try:
             re.compile(pattern, flags=re.IGNORECASE)
         except re.error as exc:
-            raise RuleValidationError(f"Rule {name} has invalid include pattern {pattern!r}: {exc}") from exc
+            raise RuleValidationError(
+                f"Rule {name} has invalid include pattern {pattern!r}: {exc}"
+            ) from exc
 
     exclude_patterns = item.get("exclude_patterns")
     if not isinstance(exclude_patterns, list):
         raise RuleValidationError(f"Rule {name} has invalid exclude_patterns")
     for pattern in exclude_patterns:
         if not isinstance(pattern, str):
-            raise RuleValidationError(f"Rule {name} includes non-string exclude_patterns value")
+            raise RuleValidationError(
+                f"Rule {name} includes non-string exclude_patterns value"
+            )
         try:
             re.compile(pattern, flags=re.IGNORECASE)
         except re.error as exc:
-            raise RuleValidationError(f"Rule {name} has invalid exclude pattern {pattern!r}: {exc}") from exc
+            raise RuleValidationError(
+                f"Rule {name} has invalid exclude pattern {pattern!r}: {exc}"
+            ) from exc
 
     confidence = item.get("confidence")
     if not isinstance(confidence, str) or not confidence.strip():

@@ -8,7 +8,12 @@ import httpx
 import pytest
 
 from uniprot_insights import api
-from uniprot_insights.api import annotate, annotate_accession, annotate_accessions, summarize_batch
+from uniprot_insights.api import (
+    annotate,
+    annotate_accession,
+    annotate_accessions,
+    summarize_batch,
+)
 from uniprot_insights.client import UniProtClient
 
 RULE_PATH = Path("src/uniprot_insights/data/default_rules.yaml")
@@ -27,11 +32,15 @@ def _build_client_with_fixtures(fixtures: dict[str, dict]) -> UniProtClient:
             return httpx.Response(status_code=404, json={"detail": "missing"})
         return httpx.Response(status_code=200, json=payload)
 
-    return UniProtClient(http_client=httpx.Client(transport=httpx.MockTransport(handler)))
+    return UniProtClient(
+        http_client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
 
 
 def test_annotate_accession() -> None:
-    client = _build_client_with_fixtures({"P22222": _load_fixture("omega5_gliadin.json")})
+    client = _build_client_with_fixtures(
+        {"P22222": _load_fixture("omega5_gliadin.json")}
+    )
 
     result = annotate_accession("P22222", client=client, rules_file=RULE_PATH)
 
@@ -48,7 +57,9 @@ def test_annotate_accessions_preserves_input_order() -> None:
         }
     )
 
-    results = annotate_accessions(["Q33333", "P22222"], client=client, rules_file=RULE_PATH)
+    results = annotate_accessions(
+        ["Q33333", "P22222"], client=client, rules_file=RULE_PATH
+    )
 
     assert len(results) == 2
     assert [item.accession for item in results] == ["Q33333", "P22222"]
@@ -57,9 +68,13 @@ def test_annotate_accessions_preserves_input_order() -> None:
 
 
 def test_annotate_accessions_fail_soft_records_errors() -> None:
-    client = _build_client_with_fixtures({"P22222": _load_fixture("omega5_gliadin.json")})
+    client = _build_client_with_fixtures(
+        {"P22222": _load_fixture("omega5_gliadin.json")}
+    )
 
-    results = annotate_accessions(["P22222", "UNKNOWN"], client=client, rules_file=RULE_PATH)
+    results = annotate_accessions(
+        ["P22222", "UNKNOWN"], client=client, rules_file=RULE_PATH
+    )
     assert len(results) == 2
     assert results[0].subgroup == "omega_5_gliadin"
     assert results[0].annotation_error is None
@@ -72,7 +87,9 @@ def test_annotate_accessions_strict_raises_errors() -> None:
     client = _build_client_with_fixtures({})
 
     with pytest.raises(Exception):
-        annotate_accessions(["UNKNOWN"], client=client, rules_file=RULE_PATH, strict=True)
+        annotate_accessions(
+            ["UNKNOWN"], client=client, rules_file=RULE_PATH, strict=True
+        )
 
 
 def test_load_accessions_file_with_accession_header_skipped() -> None:
@@ -92,11 +109,15 @@ def test_load_accessions_file_with_accession_header_skipped() -> None:
         path_csv = Path(csv_file.name)
 
     assert api._load_accessions_from_file(path, "accession") == ["P22222"]
-    assert api._load_accessions_from_file(path_tsv, "accession", delimiter="\t", has_header=True) == [
+    assert api._load_accessions_from_file(
+        path_tsv, "accession", delimiter="\t", has_header=True
+    ) == [
         "P22222",
         "Q33333",
     ]
-    assert api._load_accessions_from_file(path_csv, "accession", delimiter=",", has_header=True) == [
+    assert api._load_accessions_from_file(
+        path_csv, "accession", delimiter=",", has_header=True
+    ) == [
         "P22222",
         "Q33333",
     ]
@@ -150,7 +171,9 @@ def test_summarize_batch() -> None:
         }
     )
 
-    results = annotate_accessions(["P22222", "Q33333", "Q77777"], client=client, rules_file=RULE_PATH)
+    results = annotate_accessions(
+        ["P22222", "Q33333", "Q77777"], client=client, rules_file=RULE_PATH
+    )
     summary = summarize_batch(results)
     assert summary["broad_group"]["gliadin"] == 1
     assert summary["broad_group"]["glutenin"] == 1
@@ -158,7 +181,9 @@ def test_summarize_batch() -> None:
     assert summary["unresolved"][False] == 3
 
 
-def test_annotate_dataframe_without_pandas_raises_clear_error(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_annotate_dataframe_without_pandas_raises_clear_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     dataframe_type = type("DataFrame", (), {})
     dataframe_type.__module__ = "pandas.core.frame"
 
@@ -171,5 +196,7 @@ def test_annotate_dataframe_without_pandas_raises_clear_error(monkeypatch: pytes
 
     monkeypatch.setattr(api.importlib, "import_module", fake_import_module)
 
-    with pytest.raises(ImportError, match="pandas is required for DataFrame annotation"):
+    with pytest.raises(
+        ImportError, match="pandas is required for DataFrame annotation"
+    ):
         api.annotate(dataframe_type())

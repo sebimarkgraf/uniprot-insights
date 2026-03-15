@@ -33,7 +33,9 @@ def _matches(patterns: Iterable[str], text: str, *, ignore_case: bool = True) ->
 
 def _match_rule(rule: Rule, entry: ExtractedEntry) -> Tuple[bool, str]:
     organism = entry.organism or ""
-    if rule.organism_regex and not re.search(rule.organism_regex, organism, flags=re.IGNORECASE):
+    if rule.organism_regex and not re.search(
+        rule.organism_regex, organism, flags=re.IGNORECASE
+    ):
         return False, ""
 
     if rule.exclude_patterns and _matches(rule.exclude_patterns, entry.combined_text):

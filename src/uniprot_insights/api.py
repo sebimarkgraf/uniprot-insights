@@ -123,7 +123,14 @@ def _classify_single_accession(
 
 
 def _looks_like_accession_header(value: str) -> bool:
-    return value.strip().lower() in {"accession", "accessions", "id", "uniprot", "uniprot_id", "uniprotid"}
+    return value.strip().lower() in {
+        "accession",
+        "accessions",
+        "id",
+        "uniprot",
+        "uniprot_id",
+        "uniprotid",
+    }
 
 
 def _load_accessions_from_file(
@@ -143,7 +150,11 @@ def _load_accessions_from_file(
     if delimiter not in {"auto", ",", "\t"}:
         raise ValueError("delimiter must be ',', '\\t', or 'auto'")
 
-    lines = [line.rstrip("\n\r") for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    lines = [
+        line.rstrip("\n\r")
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     if not lines:
         return []
 
@@ -382,8 +393,7 @@ def annotate(
     delimiter: str = "auto",
     ignore_header: bool = False,
     strict: bool = False,
-) -> ClassificationResult | list[ClassificationResult]:
-    ...
+) -> ClassificationResult | list[ClassificationResult]: ...
 
 
 @overload
@@ -401,8 +411,7 @@ def annotate(
     delimiter: str = "auto",
     ignore_header: bool = False,
     strict: bool = False,
-) -> list[ClassificationResult]:
-    ...
+) -> list[ClassificationResult]: ...
 
 
 @overload
@@ -420,8 +429,7 @@ def annotate(
     delimiter: str = "auto",
     ignore_header: bool = False,
     strict: bool = False,
-) -> "pd.DataFrame":
-    ...
+) -> "pd.DataFrame": ...
 
 
 def annotate(
@@ -491,7 +499,9 @@ def annotate(
     if _looks_like_pandas_dataframe(accessions_or_df):
         pandas = _load_pandas()
         if not isinstance(accessions_or_df, pandas.DataFrame):
-            raise TypeError("Provided object appears to be a pandas DataFrame but is not.")
+            raise TypeError(
+                "Provided object appears to be a pandas DataFrame but is not."
+            )
         return _annotate_dataframe(
             accessions_or_df,
             accession_column=accession_column,
@@ -504,7 +514,9 @@ def annotate(
         )
 
     if not isinstance(accessions_or_df, Sequence):
-        raise TypeError("`accessions_or_df` must be a string, sequence of accessions, or a DataFrame.")
+        raise TypeError(
+            "`accessions_or_df` must be a string, sequence of accessions, or a DataFrame."
+        )
 
     return annotate_accessions(
         list(accessions_or_df),
@@ -517,7 +529,9 @@ def annotate(
     )
 
 
-def summarize_batch(results: Sequence[ClassificationResult]) -> dict[str, dict[str | bool, int]]:
+def summarize_batch(
+    results: Sequence[ClassificationResult],
+) -> dict[str, dict[str | bool, int]]:
     return {
         "broad_group": dict(Counter(item.broad_group for item in results)),
         "subgroup": dict(Counter(item.subgroup for item in results)),

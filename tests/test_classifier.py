@@ -29,9 +29,7 @@ def test_classify_medium_confidence_from_gene_name() -> None:
         "primaryAccession": "X11111",
         "uniProtkbId": "GENE_ONLY",
         "proteinDescription": {
-            "recommendedName": {
-                "fullName": {"value": "Seed storage component"}
-            }
+            "recommendedName": {"fullName": {"value": "Seed storage component"}}
         },
         "genes": [{"synonyms": [{"value": "gamma-gliadin"}]}],
         "keywords": [{"value": "Gliadin"}],
@@ -45,20 +43,28 @@ def test_classify_medium_confidence_from_gene_name() -> None:
 
 def test_classify_fallback_gliadin_glutenin_prolamin() -> None:
     rules = load_rules(RULE_PATH)
-    data_gliadin = json.loads(Path("tests/fixtures/prolamin_unspecified.json").read_text())
+    data_gliadin = json.loads(
+        Path("tests/fixtures/prolamin_unspecified.json").read_text()
+    )
     data_gliadin["keywords"][0]["value"] = "Gliadin"
     data_gliadin["uniProtkbId"] = "BROAD_GLIADIN"
     result_gliadin = classify_entry(extract_entry(data_gliadin), rules)
     assert result_gliadin.subgroup == "gliadin_unspecified"
 
-    data_glutenin = json.loads(Path("tests/fixtures/prolamin_unspecified.json").read_text())
+    data_glutenin = json.loads(
+        Path("tests/fixtures/prolamin_unspecified.json").read_text()
+    )
     data_glutenin["keywords"] = [{"value": "Glutenin"}]
-    data_glutenin["proteinDescription"]["recommendedName"]["fullName"]["value"] = "Unknown glutenin family"
+    data_glutenin["proteinDescription"]["recommendedName"]["fullName"]["value"] = (
+        "Unknown glutenin family"
+    )
     data_glutenin["uniProtkbId"] = "BROAD_GLUTENIN"
     result_glutenin = classify_entry(extract_entry(data_glutenin), rules)
     assert result_glutenin.subgroup == "glutenin_unspecified"
 
-    data_prolamin = json.loads(Path("tests/fixtures/prolamin_unspecified.json").read_text())
+    data_prolamin = json.loads(
+        Path("tests/fixtures/prolamin_unspecified.json").read_text()
+    )
     data_prolamin["uniProtkbId"] = "BROAD_PROLAMIN"
     data_prolamin["keywords"] = [{"value": "Prolamin"}]
     result_prolamin = classify_entry(extract_entry(data_prolamin), rules)
@@ -71,7 +77,9 @@ def test_classify_ambiguous_prolamin_and_unsupported_organism() -> None:
     result_ambiguous = classify_entry(extract_entry(ambiguous), rules)
     assert result_ambiguous.subgroup == "gliadin_unspecified"
 
-    unsupported = json.loads(Path("tests/fixtures/non_supported_gliadin.json").read_text())
+    unsupported = json.loads(
+        Path("tests/fixtures/non_supported_gliadin.json").read_text()
+    )
     result_unsupported = classify_entry(extract_entry(unsupported), rules)
     assert result_unsupported.subgroup == "unclassified"
 

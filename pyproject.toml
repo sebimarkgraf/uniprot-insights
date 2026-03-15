@@ -19,7 +19,8 @@ dependencies = [
 test = [
     "pytest>=8.0",
     "pytest-httpx>=0.35",
-    "pytest-mock>=3.14"
+    "pytest-mock>=3.14",
+    "ruff>=0.6.8"
 ]
 
 [project.scripts]
@@ -45,3 +46,11 @@ markers = [
   "integration: integration tests",
   "live: tests requiring external service",
 ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

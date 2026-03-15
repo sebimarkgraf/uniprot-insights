@@ -28,19 +28,14 @@ def test_extract_entry_combined_text_is_normalized() -> None:
         "primaryAccession": "Q99999",
         "uniProtkbId": "SPACING_1",
         "proteinDescription": {
-            "recommendedName": {
-                "fullName": {
-                    "value": "   Alpha\tBeta   gliadin  "
-                }
-            }
+            "recommendedName": {"fullName": {"value": "   Alpha\tBeta   gliadin  "}}
         },
         "organism": {"scientificName": "   Triticum \n aestivum "},
         "comments": [
-            {"commentType": "FUNCTION", "texts": [{"value": "   Stored   Protein   "}]} 
+            {"commentType": "FUNCTION", "texts": [{"value": "   Stored   Protein   "}]}
         ],
     }
     extracted = extract_entry(data)
     assert extracted.combined_text == (
-        "alpha beta gliadin triticum aestivum "
-        "function stored protein spacing_1"
+        "alpha beta gliadin triticum aestivum function stored protein spacing_1"
     )

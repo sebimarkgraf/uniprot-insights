@@ -25,7 +25,11 @@ UV_CACHE_DIR=/tmp/uv-cache uv venv .venv
 .venv/bin/pytest -q
 ```
 
-After any code, documentation, or configuration change, run the test suite with `.venv/bin/pytest -q` before wrapping up that change.
+After any code, documentation, or configuration change, run formatting at the end and then run the test suite with `.venv/bin/pytest -q` before wrapping up that change.
+
+```bash
+.venv/bin/ruff format .
+```
 
 The expected current baseline is:
 
