@@ -45,6 +45,20 @@ def _build_client(base_url: str, timeout: float, cache_path: Optional[Path]) -> 
     return UniProtClient(base_url=base_url, timeout=timeout, cache=cache)
 
 
+def _load_accessions_from_file(file_path: Path, column: str) -> list[str]:
+    with file_path.open("r", encoding="utf-8", newline="") as handle:
+        first_line = handle.readline()
+        if "," in first_line or "\t" in first_line:
+            handle.seek(0)
+            reader = csv.DictReader(handle)
+            if not reader.fieldnames or column not in reader.fieldnames:
+                raise typer.BadParameter(f"Column '{column}' not found in {file_path}")
+            return [row.get(column, "").strip() for row in reader if row.get(column, "").strip()]
+
+        handle.seek(0)
+        return [line.strip() for line in handle if line.strip()]
+
+
 def _write_csv(results: List[ClassificationResult], output: Optional[Path] = None) -> None:
     out_handle = output.open("w", encoding="utf-8", newline="") if output else sys.stdout
     close_output = bool(output)
@@ -70,13 +84,23 @@ def _write_csv(results: List[ClassificationResult], output: Optional[Path] = Non
 
 @app.command("classify-id")
 def classify_id(
-    accessions: List[str] = typer.Argument(..., help="UniProt accession(s) to classify"),
+    accessions: List[str] = typer.Argument(..., help="UniProt accession(s) or one input file to classify"),
+    strategy: str = typer.Option("file", "--strategy", help="Input strategy: 'file' or 'single'"),
+    column: str = typer.Option("accession", "--column", help="Accession column when strategy='file'"),
     rules_file: Optional[Path] = typer.Option(None, "--rules", help="YAML rules file"),
     base_url: str = typer.Option("https://rest.uniprot.org/uniprotkb", "--base-url", help="UniProt API base URL"),
     timeout: float = typer.Option(10.0, "--timeout", help="HTTP timeout in seconds"),
     cache_dir: Optional[Path] = typer.Option(None, "--cache-dir", help="Optional filesystem cache directory"),
 ):
     try:
+        if strategy == "file":
+            if len(accessions) == 1:
+                source_path = Path(accessions[0])
+                if source_path.is_file():
+                    accessions = _load_accessions_from_file(source_path, column=column)
+        elif strategy != "single":
+            raise typer.BadParameter("strategy must be one of: file, single")
+
         rules = _load_rules(rules_file)
         client = _build_client(base_url=base_url, timeout=timeout, cache_path=cache_dir)
         raw_entries = client.fetch_many(accessions)
@@ -101,11 +125,7 @@ def classify_file(
     try:
         rules = _load_rules(rules_file)
         client = _build_client(base_url=base_url, timeout=timeout, cache_path=cache_dir)
-        with file_path.open("r", encoding="utf-8", newline="") as handle:
-            reader = csv.DictReader(handle)
-            if not reader.fieldnames or column not in reader.fieldnames:
-                raise typer.BadParameter(f"Column '{column}' not found in {file_path}")
-            accessions = [row.get(column, "").strip() for row in reader if row.get(column, "").strip()]
+        accessions = _load_accessions_from_file(file_path, column=column)
 
         if not accessions:
             typer.echo("No accessions found in input file", err=True)
