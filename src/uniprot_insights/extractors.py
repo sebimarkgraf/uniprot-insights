@@ -53,7 +53,7 @@ def _collect_gene_values(gene_section: Dict[str, Any]) -> List[str]:
 
 
 def _normalize_whitespace(value: str) -> str:
-    return re.sub(r"\\s+", " ", value.strip()).lower()
+    return re.sub(r"\s+", " ", value.strip()).lower()
 
 
 def extract_entry(raw_json: Dict[str, Any]) -> ExtractedEntry:
@@ -109,6 +109,7 @@ def extract_entry(raw_json: Dict[str, Any]) -> ExtractedEntry:
                     if isinstance(text_entry, dict):
                         value = text_entry.get("value")
                         if isinstance(value, str):
+                            value = re.sub(r"(?i)^part of\s+", "", value).strip()
                             comments.append(value)
 
     organism_section = raw_json.get("organism", {})
@@ -122,8 +123,8 @@ def extract_entry(raw_json: Dict[str, Any]) -> ExtractedEntry:
         *protein_names,
         *gene_names,
         *keywords,
-        *comments,
         organism,
+        *comments,
         entry_name,
     ]
     combined_text = _normalize_whitespace(" ".join(part.strip() for part in all_text if isinstance(part, str)))
