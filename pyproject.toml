@@ -41,3 +41,7 @@ uniprot_insights = ["data/*.yaml"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-q"]
+markers = [
+  "integration: integration tests",
+  "live: tests requiring external service",
+]
