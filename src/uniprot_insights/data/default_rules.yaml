@@ -1,0 +1,94 @@
+- name: omega_5_gliadin
+  priority: 10
+  broad_group: gliadin
+  subgroup: omega_5_gliadin
+  organism_regex: triticum
+  include_patterns:
+    - "omega[- ]?5 gliadin"
+  exclude_patterns: []
+  confidence: high
+
+- name: alpha_beta_gliadin
+  priority: 20
+  broad_group: gliadin
+  subgroup: alpha_beta_gliadin
+  organism_regex: triticum
+  include_patterns:
+    - "alpha/beta[- ]?gliadin"
+    - "alpha[- ]?gliadin"
+    - "beta[- ]?gliadin"
+  exclude_patterns: []
+  confidence: high
+
+- name: gamma_gliadin
+  priority: 30
+  broad_group: gliadin
+  subgroup: gamma_gliadin
+  organism_regex: triticum
+  include_patterns:
+    - "gamma[- ]?gliadin"
+  exclude_patterns: []
+  confidence: high
+
+- name: omega_gliadin
+  priority: 40
+  broad_group: gliadin
+  subgroup: omega_gliadin
+  organism_regex: triticum
+  include_patterns:
+    - "omega[- ]?gliadin"
+  exclude_patterns:
+    - "omega[- ]?5 gliadin"
+  confidence: high
+
+- name: lmw_glutenin
+  priority: 50
+  broad_group: glutenin
+  subgroup: lmw_glutenin
+  organism_regex: triticum
+  include_patterns:
+    - "low molecular weight glutenin"
+    - "lmw[- ]?glutenin"
+  exclude_patterns: []
+  confidence: high
+
+- name: hmw_glutenin
+  priority: 60
+  broad_group: glutenin
+  subgroup: hmw_glutenin
+  organism_regex: triticum
+  include_patterns:
+    - "high molecular weight glutenin"
+    - "hmw[- ]?glutenin"
+  exclude_patterns: []
+  confidence: high
+
+- name: gliadin
+  priority: 100
+  broad_group: gliadin
+  subgroup: gliadin
+  organism_regex: triticum
+  include_patterns:
+    - "\\bgliadin\\b"
+  exclude_patterns: []
+  confidence: medium
+
+- name: glutenin
+  priority: 110
+  broad_group: glutenin
+  subgroup: glutenin
+  organism_regex: triticum
+  include_patterns:
+    - "\\bglutenin\\b"
+  exclude_patterns: []
+  confidence: medium
+
+- name: prolamin
+  priority: 120
+  broad_group: prolamin
+  subgroup: prolamin
+  organism_regex: triticum
+  include_patterns:
+    - "\\bprolamin\\b"
+  exclude_patterns: []
+  confidence: medium

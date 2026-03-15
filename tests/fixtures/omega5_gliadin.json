@@ -1,0 +1,30 @@
+{
+  "primaryAccession": "P22222",
+  "uniProtkbId": "OMEGA_5_1",
+  "proteinDescription": {
+    "recommendedName": {
+      "fullName": {
+        "value": "Omega-5 gliadin"
+      }
+    }
+  },
+  "genes": [
+    {
+      "geneName": {"value": "G2L1"}
+    }
+  ],
+  "keywords": [
+    {"value": "Gliadin"}
+  ],
+  "comments": [
+    {
+      "commentType": "FUNCTION",
+      "texts": [
+        {"value": "wheat gliadin class"}
+      ]
+    }
+  ],
+  "organism": {
+    "scientificName": "Triticum dicoccoides"
+  }
+}

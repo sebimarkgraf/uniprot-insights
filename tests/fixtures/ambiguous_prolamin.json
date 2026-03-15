@@ -1,0 +1,23 @@
+{
+  "primaryAccession": "Q55555",
+  "uniProtkbId": "AMBIGUOUS_1",
+  "proteinDescription": {
+    "recommendedName": {
+      "fullName": {
+        "value": "Plant storage prolamin protein"
+      }
+    }
+  },
+  "genes": [
+    {
+      "geneName": {"value": "GENE_AMB"}
+    }
+  ],
+  "keywords": [
+    {"value": "Prolamin"},
+    {"value": "Gliadin"}
+  ],
+  "organism": {
+    "scientificName": "Triticum aestivum"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "primaryAccession": "Q77777",
+  "uniProtkbId": "OTHER_PROTEIN",
+  "proteinDescription": {
+    "recommendedName": {
+      "fullName": {
+        "value": "Generic gliadin-like protein"
+    }
+    }
+  },
+  "genes": [
+    {
+      "geneName": {"value": "GLI1"}
+    }
+  ],
+  "keywords": [
+    {"value": "Gliadin"}
+  ],
+  "organism": {
+    "scientificName": "Oryza sativa"
+  }
+}

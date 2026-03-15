@@ -1,0 +1,36 @@
+{
+  "primaryAccession": "P11111",
+  "uniProtkbId": "ALPHA_BETA_1",
+  "proteinDescription": {
+    "recommendedName": {
+      "fullName": {
+        "value": "Alpha/Beta-gliadin precursor"
+      }
+    },
+    "alternativeNames": [
+      {
+        "fullName": {"value": "alpha-gliadin precursor"}
+      }
+    ]
+  },
+  "genes": [
+    {
+      "geneName": {"value": "GYI"},
+      "synonyms": [{"value": "Alpha-gliadin 5"}]
+    }
+  ],
+  "keywords": [
+    {"value": "Gliadin"}
+  ],
+  "comments": [
+    {
+      "commentType": "FUNCTION",
+      "texts": [
+        {"value": "part of wheat storage proteins"}
+      ]
+    }
+  ],
+  "organism": {
+    "scientificName": "Triticum aestivum"
+  }
+}

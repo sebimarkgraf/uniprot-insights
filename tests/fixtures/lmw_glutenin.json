@@ -1,0 +1,22 @@
+{
+  "primaryAccession": "Q33333",
+  "uniProtkbId": "LMW_GLU_1",
+  "proteinDescription": {
+    "recommendedName": {
+      "fullName": {
+        "value": "Low molecular weight glutenin subunit"
+      }
+    }
+  },
+  "genes": [
+    {
+      "geneName": {"value": "Glu-A3"}
+    }
+  ],
+  "keywords": [
+    {"value": "Glutenin"}
+  ],
+  "organism": {
+    "scientificName": "Triticum aestivum"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "primaryAccession": "Q44444",
+  "uniProtkbId": "PROLAMIN_1",
+  "proteinDescription": {
+    "recommendedName": {
+      "fullName": {
+        "value": "Wheat seed prolamin"
+      }
+    }
+  },
+  "genes": [
+    {
+      "geneName": {"value": "PROL1"}
+    }
+  ],
+  "keywords": [
+    {"value": "Prolamin"}
+  ],
+  "organism": {
+    "scientificName": "Triticum aestivum"
+  }
+}
