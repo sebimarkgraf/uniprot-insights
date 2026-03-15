@@ -1,0 +1,21 @@
+site_name: uniprot-insights
+site_description: UniProt annotation extraction and subgroup classification utilities
+site_url: https://example.com/uniprot-insights
+repo_url: https://example.com/uniprot-insights
+repo_name: uniprot-insights
+
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Rule system: rules.md
+  - API reference: api.md
+  - Development: development.md
+
+theme:
+  name: readthedocs
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+

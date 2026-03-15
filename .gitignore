@@ -33,3 +33,4 @@ htmlcov/
 # UV caches and lock/runtime
 /.pytest_cache/
 /.uv-cache/
+site/

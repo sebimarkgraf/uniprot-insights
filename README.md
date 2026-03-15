@@ -1,5 +1,8 @@
 # uniprot-insights
 
+[![Tests](https://github.com/sebbo/uniprot-lookups/actions/workflows/ci.yml/badge.svg)](https://github.com/sebbo/uniprot-lookups/actions/workflows/ci.yml)
+[![Docs](https://github.com/sebbo/uniprot-lookups/actions/workflows/docs.yml/badge.svg)](https://github.com/sebbo/uniprot-lookups/actions/workflows/docs.yml)
+
 `uniprot_insights` is a small UniProt-focused Python package for:
 
 - downloading UniProtKB entries from the UniProt REST API
@@ -109,6 +112,17 @@ Run tests:
 ```bash
 pytest
 ```
+
+## Documentation
+
+This repository ships with MkDocs documentation:
+
+```bash
+UV_CACHE_DIR=/tmp/uv-cache uv pip install -p .venv/bin/python "mkdocs>=1.6"
+UV_CACHE_DIR=/tmp/uv-cache .venv/bin/mkdocs serve -a 0.0.0.0:8000
+```
+
+Open `http://127.0.0.1:8000` to view docs.
 
 ## Extending
 
