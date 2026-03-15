@@ -1,7 +1,11 @@
 # uniprot-insights
 
-[![Tests](https://github.com/sebbo/uniprot-lookups/actions/workflows/ci.yml/badge.svg)](https://github.com/sebbo/uniprot-lookups/actions/workflows/ci.yml)
-[![Docs](https://github.com/sebbo/uniprot-lookups/actions/workflows/docs.yml/badge.svg)](https://github.com/sebbo/uniprot-lookups/actions/workflows/docs.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/sebimarkgraf/uniprot-insights/ci.yml?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/sebimarkgraf/uniprot-insights/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/github/actions/workflow/status/sebimarkgraf/uniprot-insights/docs.yml?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/sebimarkgraf/uniprot-insights/actions/workflows/docs.yml)
+[![Python](https://img.shields.io/badge/Python-%3E%3D3.10-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![Issues](https://img.shields.io/github/issues/sebimarkgraf/uniprot-insights?style=flat-square&logo=github)](https://github.com/sebimarkgraf/uniprot-insights/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/sebimarkgraf/uniprot-insights?style=flat-square&logo=github)](https://github.com/sebimarkgraf/uniprot-insights/commits/main)
+[![Stars](https://img.shields.io/github/stars/sebimarkgraf/uniprot-insights?style=flat-square&logo=github)](https://github.com/sebimarkgraf/uniprot-insights/stargazers)
 
 `uniprot_insights` is a small UniProt-focused Python package for:
 
