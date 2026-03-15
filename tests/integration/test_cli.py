@@ -56,6 +56,36 @@ def test_classify_id_full_pipeline_writes_csv_to_stdout(monkeypatch: pytest.Monk
     assert rows[1]["confidence"] == "high"
     assert rows[0]["accession"] == "P22222"
     assert rows[1]["accession"] == "Q33333"
+    assert rows[0]["annotation_error"] == ""
+
+
+def test_classify_id_default_behavior_continues_on_missing_accession(monkeypatch: pytest.MonkeyPatch) -> None:
+    fixtures = {
+        "P22222": _load_fixture("omega5_gliadin.json"),
+    }
+    client = _build_client_with_fixtures(fixtures)
+    monkeypatch.setattr(cli, "_build_client", lambda *_args, **_kwargs: client)
+
+    result = RUNNER.invoke(cli.app, ["classify-id", "P22222", "MISSING"])
+    assert result.exit_code == 0
+
+    rows = list(csv.DictReader(io.StringIO(result.stdout)))
+    assert len(rows) == 2
+    assert rows[0]["subgroup"] == "omega_5_gliadin"
+    assert rows[1]["subgroup"] == "unclassified"
+    assert rows[1]["annotation_error"] != ""
+
+
+def test_classify_id_fail_fast_rejects_missing_accession(monkeypatch: pytest.MonkeyPatch) -> None:
+    fixtures = {
+        "P22222": _load_fixture("omega5_gliadin.json"),
+    }
+    client = _build_client_with_fixtures(fixtures)
+    monkeypatch.setattr(cli, "_build_client", lambda *_args, **_kwargs: client)
+
+    result = RUNNER.invoke(cli.app, ["classify-id", "--fail-fast", "P22222", "MISSING"])
+    assert result.exit_code == 1
+
 
 @pytest.mark.integration
 def test_classify_id_with_cache_reuses_same_accession_once(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -72,6 +102,34 @@ def test_classify_id_with_cache_reuses_same_accession_once(monkeypatch: pytest.M
     assert rows[0]["accession"] == "P22222"
     assert rows[1]["accession"] == "P22222"
     assert hits["count"] == 1
+
+
+def test_classify_file_supports_tsv_delimiter_and_no_header(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    fixtures = {"P22222": _load_fixture("omega5_gliadin.json")}
+    client = _build_client_with_fixtures(fixtures)
+    monkeypatch.setattr(cli, "_build_client", lambda *_args, **_kwargs: client)
+
+    input_tsv = tmp_path / "input.tsv"
+    input_tsv.write_text("P22222\tQ77777", encoding="utf-8")
+    output_csv = tmp_path / "classified.tsv.csv"
+
+    result = RUNNER.invoke(
+        cli.app,
+        [
+            "classify-file",
+            str(input_tsv),
+            "--delimiter",
+            "\t",
+            "--no-header",
+            "--output",
+            str(output_csv),
+        ],
+    )
+    assert result.exit_code == 0
+    with output_csv.open("r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    assert len(rows) == 1
+    assert rows[0]["subgroup"] == "omega_5_gliadin"
 
 
 @pytest.mark.integration

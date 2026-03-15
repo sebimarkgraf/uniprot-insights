@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import importlib
 import math
+from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, overload
@@ -75,10 +76,35 @@ def _classify_accessions(
     *,
     rules_file: Path | str | None,
     client: UniProtClient,
+    strict: bool = False,
 ) -> list[ClassificationResult]:
     rules = load_rules(rules_file)
-    raw_entries = client.fetch_many(accessions)
-    return [classify_entry(extract_entry(raw), rules) for raw in raw_entries]
+    results: list[ClassificationResult] = []
+    for accession in accessions:
+        try:
+            raw = client.fetch_entry(accession)
+            results.append(classify_entry(extract_entry(raw), rules))
+        except Exception as exc:
+            if strict:
+                raise
+            results.append(
+                ClassificationResult(
+                    accession=accession,
+                    organism="",
+                    entry_name="",
+                    protein_name="",
+                    broad_group="unclassified",
+                    subgroup="unclassified",
+                    confidence="none",
+                    evidence="error",
+                    matched_rule=None,
+                    matched_pattern=None,
+                    pattern_source=None,
+                    annotation_error=_format_exception_message(exc),
+                    unresolved=True,
+                )
+            )
+    return results
 
 
 def _classify_single_accession(
@@ -86,19 +112,57 @@ def _classify_single_accession(
     *,
     rules_file: Path | str | None,
     client: UniProtClient,
+    strict: bool = False,
 ) -> ClassificationResult:
-    return _classify_accessions([accession], rules_file=rules_file, client=client)[0]
+    return _classify_accessions(
+        [accession],
+        rules_file=rules_file,
+        client=client,
+        strict=strict,
+    )[0]
 
 
-def _load_accessions_from_file(path: Path, column: str) -> list[str]:
+def _looks_like_accession_header(value: str) -> bool:
+    return value.strip().lower() in {"accession", "accessions", "id", "uniprot", "uniprot_id", "uniprotid"}
+
+
+def _load_accessions_from_file(
+    path: Path,
+    column: str,
+    *,
+    has_header: bool = True,
+    delimiter: str = "auto",
+    ignore_header: bool = False,
+) -> list[str]:
     if not path.is_file():
         raise ValueError(f"Input file does not exist: {path}")
 
-    with path.open("r", encoding="utf-8", newline="") as handle:
-        first_line = handle.readline()
-        if "," in first_line or "\t" in first_line:
-            handle.seek(0)
-            reader = csv.DictReader(handle)
+    if delimiter == "\\t":
+        delimiter = "\t"
+
+    if delimiter not in {"auto", ",", "\t"}:
+        raise ValueError("delimiter must be ',', '\\t', or 'auto'")
+
+    lines = [line.rstrip("\n\r") for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not lines:
+        return []
+
+    sample = "\n".join(lines[:20])
+    detected_delimiter: str | None = None
+
+    if delimiter == "auto":
+        try:
+            detected = csv.Sniffer().sniff(sample, delimiters=",\t")
+            if detected.delimiter in {",", "\t"}:
+                detected_delimiter = detected.delimiter
+        except csv.Error:
+            detected_delimiter = None
+    else:
+        detected_delimiter = delimiter
+
+    if detected_delimiter is not None:
+        if has_header:
+            reader = csv.DictReader(lines, delimiter=detected_delimiter)
             if not reader.fieldnames:
                 raise ValueError(f"Input file {path} is missing a header row.")
             if column not in reader.fieldnames:
@@ -109,8 +173,18 @@ def _load_accessions_from_file(path: Path, column: str) -> list[str]:
                 if str(row.get(column, "")).strip()
             ]
 
-        handle.seek(0)
-        return [line.strip() for line in handle if line.strip()]
+        reader = csv.reader(lines, delimiter=detected_delimiter)
+        return [row[0].strip() for row in reader if row and row[0].strip()]
+
+    header = lines[0]
+    if has_header:
+        if ignore_header or _looks_like_accession_header(header):
+            return lines[1:]
+        return lines
+
+    if ignore_header:
+        return lines[1:]
+    return lines
 
 
 def _resolve_accessions_from_input(
@@ -118,11 +192,20 @@ def _resolve_accessions_from_input(
     *,
     strategy: str,
     column: str,
+    has_header: bool = True,
+    delimiter: str = "auto",
+    ignore_header: bool = False,
 ) -> list[str]:
     if strategy == "file":
         file_path = Path(accessions_or_path)
         if file_path.is_file():
-            return _load_accessions_from_file(file_path, column=column)
+            return _load_accessions_from_file(
+                file_path,
+                column=column,
+                has_header=has_header,
+                delimiter=delimiter,
+                ignore_header=ignore_header,
+            )
         return [accessions_or_path]
 
     if strategy == "single":
@@ -137,14 +220,14 @@ def _resolve_accessions_from_input(
 def _to_error_row(accession: str, error_message: str) -> dict[str, Any]:
     return {
         "accession": accession,
-        "organism": None,
-        "entry_name": None,
-        "broad_group": None,
-        "subgroup": None,
-        "confidence": None,
-        "evidence": None,
+        "organism": "",
+        "entry_name": "",
+        "broad_group": "unclassified",
+        "subgroup": "unclassified",
+        "confidence": "none",
+        "evidence": "error",
         "matched_rule": None,
-        "unresolved": None,
+        "unresolved": True,
         "annotation_error": error_message,
     }
 
@@ -160,7 +243,7 @@ def _to_output_row(result: ClassificationResult) -> dict[str, Any]:
         "evidence": result.evidence,
         "matched_rule": result.matched_rule,
         "unresolved": result.unresolved,
-        "annotation_error": "",
+        "annotation_error": result.annotation_error or "",
     }
 
 
@@ -176,6 +259,7 @@ def annotate_accessions(
     base_url: str = "https://rest.uniprot.org/uniprotkb",
     timeout: float = 10.0,
     cache: Optional["CacheBackend"] = None,
+    strict: bool = False,
 ) -> list[ClassificationResult]:
     if not accessions:
         return []
@@ -195,7 +279,12 @@ def annotate_accessions(
         cache=cache,
         provided_client=client,
     )
-    return _classify_accessions(normalized, rules_file=rules_file, client=resolved_client)
+    return _classify_accessions(
+        normalized,
+        rules_file=rules_file,
+        client=resolved_client,
+        strict=strict,
+    )
 
 
 def annotate_accession(
@@ -206,6 +295,7 @@ def annotate_accession(
     base_url: str = "https://rest.uniprot.org/uniprotkb",
     timeout: float = 10.0,
     cache: Optional["CacheBackend"] = None,
+    strict: bool = False,
 ) -> ClassificationResult:
     normalized = _normalize_accession(accession)
     if not normalized:
@@ -217,7 +307,12 @@ def annotate_accession(
         cache=cache,
         provided_client=client,
     )
-    return _classify_single_accession(normalized, rules_file=rules_file, client=resolved_client)
+    return _classify_single_accession(
+        normalized,
+        rules_file=rules_file,
+        client=resolved_client,
+        strict=strict,
+    )
 
 
 def _annotate_dataframe(
@@ -283,7 +378,11 @@ def annotate(
     base_url: str = ...,
     timeout: float = ...,
     cache: Optional["CacheBackend"] = None,
-    ) -> ClassificationResult | list[ClassificationResult]:
+    has_header: bool = True,
+    delimiter: str = "auto",
+    ignore_header: bool = False,
+    strict: bool = False,
+) -> ClassificationResult | list[ClassificationResult]:
     ...
 
 
@@ -298,6 +397,9 @@ def annotate(
     base_url: str = ...,
     timeout: float = ...,
     cache: Optional["CacheBackend"] = None,
+    has_header: bool = True,
+    delimiter: str = "auto",
+    ignore_header: bool = False,
     strict: bool = False,
 ) -> list[ClassificationResult]:
     ...
@@ -314,6 +416,9 @@ def annotate(
     base_url: str = ...,
     timeout: float = ...,
     cache: Optional["CacheBackend"] = None,
+    has_header: bool = True,
+    delimiter: str = "auto",
+    ignore_header: bool = False,
     strict: bool = False,
 ) -> "pd.DataFrame":
     ...
@@ -329,6 +434,9 @@ def annotate(
     base_url: str = "https://rest.uniprot.org/uniprotkb",
     timeout: float = 10.0,
     cache: Optional["CacheBackend"] = None,
+    has_header: bool = True,
+    delimiter: str = "auto",
+    ignore_header: bool = False,
     strict: bool = False,
 ) -> ClassificationResult | list[ClassificationResult] | "pd.DataFrame":
     if isinstance(accessions_or_df, (str, Path)):
@@ -336,7 +444,13 @@ def annotate(
         if strategy == "file":
             file_path = Path(accession_input)
             if file_path.is_file():
-                accessions = _load_accessions_from_file(file_path, column=accession_column)
+                accessions = _load_accessions_from_file(
+                    file_path,
+                    column=accession_column,
+                    has_header=has_header,
+                    delimiter=delimiter,
+                    ignore_header=ignore_header,
+                )
                 return annotate_accessions(
                     accessions,
                     rules_file=rules_file,
@@ -344,6 +458,7 @@ def annotate(
                     base_url=base_url,
                     timeout=timeout,
                     cache=cache,
+                    strict=strict,
                 )
             return annotate_accession(
                 accession_input,
@@ -352,12 +467,16 @@ def annotate(
                 base_url=base_url,
                 timeout=timeout,
                 cache=cache,
+                strict=strict,
             )
 
         accessions = _resolve_accessions_from_input(
             accession_input,
             strategy=strategy,
             column=accession_column,
+            has_header=has_header,
+            delimiter=delimiter,
+            ignore_header=ignore_header,
         )
         return annotate_accessions(
             accessions,
@@ -366,6 +485,7 @@ def annotate(
             base_url=base_url,
             timeout=timeout,
             cache=cache,
+            strict=strict,
         )
 
     if _looks_like_pandas_dataframe(accessions_or_df):
@@ -393,4 +513,15 @@ def annotate(
         base_url=base_url,
         timeout=timeout,
         cache=cache,
+        strict=strict,
     )
+
+
+def summarize_batch(results: Sequence[ClassificationResult]) -> dict[str, dict[str | bool, int]]:
+    return {
+        "broad_group": dict(Counter(item.broad_group for item in results)),
+        "subgroup": dict(Counter(item.subgroup for item in results)),
+        "unresolved": dict(Counter(bool(item.unresolved) for item in results)),
+        "confidence": dict(Counter(item.confidence for item in results)),
+        "pattern_source": dict(Counter(item.pattern_source or "" for item in results)),
+    }

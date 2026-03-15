@@ -11,10 +11,9 @@ import typer
 from .cache import FileSystemCache, InMemoryCache
 from .client import UniProtClient
 from .exceptions import RuleValidationError, UniProtAPIError, UniProtNotFoundError
-from .extractors import extract_entry
 from .models import ClassificationResult
+from .api import annotate_accessions, _load_accessions_from_file
 from .rules import load_rules
-from .classifier import classify_entry
 
 app = typer.Typer(help="General UniProt annotation and subgroup classification tools")
 
@@ -29,6 +28,7 @@ CSV_HEADERS = [
     "evidence",
     "matched_rule",
     "unresolved",
+    "annotation_error",
 ]
 
 
@@ -45,39 +45,41 @@ def _build_client(base_url: str, timeout: float, cache_path: Optional[Path]) -> 
     return UniProtClient(base_url=base_url, timeout=timeout, cache=cache)
 
 
-def _load_accessions_from_file(file_path: Path, column: str) -> list[str]:
-    with file_path.open("r", encoding="utf-8", newline="") as handle:
-        first_line = handle.readline()
-        if "," in first_line or "\t" in first_line:
-            handle.seek(0)
-            reader = csv.DictReader(handle)
-            if not reader.fieldnames or column not in reader.fieldnames:
-                raise typer.BadParameter(f"Column '{column}' not found in {file_path}")
-            return [row.get(column, "").strip() for row in reader if row.get(column, "").strip()]
+def _write_csv(
+    results: List[ClassificationResult],
+    output: Optional[Path] = None,
+    *,
+    include_debug: bool = False,
+    quiet_errors: bool = False,
+) -> None:
+    fieldnames = CSV_HEADERS.copy()
+    if include_debug:
+        fieldnames.extend(["matched_pattern", "pattern_source"])
 
-        handle.seek(0)
-        return [line.strip() for line in handle if line.strip()]
-
-
-def _write_csv(results: List[ClassificationResult], output: Optional[Path] = None) -> None:
     out_handle = output.open("w", encoding="utf-8", newline="") if output else sys.stdout
     close_output = bool(output)
-    writer = csv.DictWriter(out_handle, fieldnames=CSV_HEADERS)
+    writer = csv.DictWriter(out_handle, fieldnames=fieldnames)
     writer.writeheader()
     for result in results:
-        writer.writerow(
-            {
-                "accession": result.accession,
-                "organism": result.organism,
-                "entry_name": result.entry_name,
-                "broad_group": result.broad_group,
-                "subgroup": result.subgroup,
-                "confidence": result.confidence,
-                "evidence": result.evidence,
-                "matched_rule": result.matched_rule or "",
-                "unresolved": str(bool(result.unresolved)).lower(),
-            }
-        )
+        annotation_error = result.annotation_error or ""
+        if quiet_errors:
+            annotation_error = ""
+        row = {
+            "accession": result.accession,
+            "organism": result.organism,
+            "entry_name": result.entry_name,
+            "broad_group": result.broad_group,
+            "subgroup": result.subgroup,
+            "confidence": result.confidence,
+            "evidence": result.evidence,
+            "matched_rule": result.matched_rule or "",
+            "unresolved": str(bool(result.unresolved)).lower(),
+            "annotation_error": annotation_error,
+        }
+        if include_debug:
+            row["matched_pattern"] = result.matched_pattern or ""
+            row["pattern_source"] = result.pattern_source or ""
+        writer.writerow(row)
     if close_output:
         out_handle.close()
 
@@ -87,26 +89,44 @@ def classify_id(
     accessions: List[str] = typer.Argument(..., help="UniProt accession(s) or one input file to classify"),
     strategy: str = typer.Option("file", "--strategy", help="Input strategy: 'file' or 'single'"),
     column: str = typer.Option("accession", "--column", help="Accession column when strategy='file'"),
+    has_header: bool = typer.Option(True, "--has-header/--no-header", help="Whether the accession file has a header row"),
+    delimiter: str = typer.Option("auto", "--delimiter", help="Input delimiter: ',', '\\t', or 'auto'"),
+    ignore_header: bool = typer.Option(
+        False,
+        "--ignore-header",
+        help="Skip the first line in file inputs, even when it does not look like a header",
+    ),
+    fail_fast: bool = typer.Option(False, "--fail-fast", help="Raise on first failed accession"),
+    quiet_errors: bool = typer.Option(False, "--quiet-errors", help="Suppress annotation_error text in output"),
     rules_file: Optional[Path] = typer.Option(None, "--rules", help="YAML rules file"),
     base_url: str = typer.Option("https://rest.uniprot.org/uniprotkb", "--base-url", help="UniProt API base URL"),
     timeout: float = typer.Option(10.0, "--timeout", help="HTTP timeout in seconds"),
     cache_dir: Optional[Path] = typer.Option(None, "--cache-dir", help="Optional filesystem cache directory"),
+    verbose: bool = typer.Option(False, "--verbose", help="Include matching pattern diagnostics"),
 ):
     try:
         if strategy == "file":
             if len(accessions) == 1:
                 source_path = Path(accessions[0])
                 if source_path.is_file():
-                    accessions = _load_accessions_from_file(source_path, column=column)
+                    accessions = _load_accessions_from_file(
+                        source_path,
+                        column,
+                        has_header=has_header,
+                        delimiter=delimiter,
+                        ignore_header=ignore_header,
+                    )
         elif strategy != "single":
             raise typer.BadParameter("strategy must be one of: file, single")
 
-        rules = _load_rules(rules_file)
         client = _build_client(base_url=base_url, timeout=timeout, cache_path=cache_dir)
-        raw_entries = client.fetch_many(accessions)
-        extracted = [extract_entry(raw) for raw in raw_entries]
-        results = [classify_entry(item, rules) for item in extracted]
-        _write_csv(results)
+        results = annotate_accessions(
+            accessions,
+            rules_file=rules_file,
+            client=client,
+            strict=fail_fast,
+        )
+        _write_csv(results, include_debug=verbose, quiet_errors=quiet_errors)
     except (RuleValidationError, UniProtAPIError, UniProtNotFoundError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1)
@@ -116,25 +136,43 @@ def classify_id(
 def classify_file(
     file_path: Path = typer.Argument(..., exists=True, readable=True, help="CSV file with accession column"),
     column: str = typer.Option("accession", "--column", help="Accession column in input CSV"),
+    has_header: bool = typer.Option(True, "--has-header/--no-header", help="Whether the accession file has a header row"),
+    delimiter: str = typer.Option("auto", "--delimiter", help="Input delimiter: ',', '\\t', or 'auto'"),
+    ignore_header: bool = typer.Option(
+        False,
+        "--ignore-header",
+        help="Skip the first line in file inputs, even when it does not look like a header",
+    ),
+    fail_fast: bool = typer.Option(False, "--fail-fast", help="Raise on first failed accession"),
+    quiet_errors: bool = typer.Option(False, "--quiet-errors", help="Suppress annotation_error text in output"),
     rules_file: Optional[Path] = typer.Option(None, "--rules", help="YAML rules file"),
     base_url: str = typer.Option("https://rest.uniprot.org/uniprotkb", "--base-url", help="UniProt API base URL"),
     timeout: float = typer.Option(10.0, "--timeout", help="HTTP timeout in seconds"),
     output: Optional[Path] = typer.Option(None, "--output", help="Optional output CSV path"),
     cache_dir: Optional[Path] = typer.Option(None, "--cache-dir", help="Optional filesystem cache directory"),
+    verbose: bool = typer.Option(False, "--verbose", help="Include matching pattern diagnostics"),
 ):
     try:
-        rules = _load_rules(rules_file)
         client = _build_client(base_url=base_url, timeout=timeout, cache_path=cache_dir)
-        accessions = _load_accessions_from_file(file_path, column=column)
+        accessions = _load_accessions_from_file(
+            file_path,
+            column,
+            has_header=has_header,
+            delimiter=delimiter,
+            ignore_header=ignore_header,
+        )
 
         if not accessions:
             typer.echo("No accessions found in input file", err=True)
             raise typer.Exit(code=1)
 
-        raw_entries = client.fetch_many(accessions)
-        extracted = [extract_entry(raw) for raw in raw_entries]
-        results = [classify_entry(item, rules) for item in extracted]
-        _write_csv(results, output=output)
+        results = annotate_accessions(
+            accessions,
+            rules_file=rules_file,
+            client=client,
+            strict=fail_fast,
+        )
+        _write_csv(results, output=output, include_debug=verbose, quiet_errors=quiet_errors)
     except (RuleValidationError, UniProtAPIError, UniProtNotFoundError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1)

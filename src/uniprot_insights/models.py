@@ -39,4 +39,7 @@ class ClassificationResult:
     confidence: str
     evidence: str
     matched_rule: Optional[str]
+    matched_pattern: Optional[str] = None
+    pattern_source: Optional[str] = None
+    annotation_error: Optional[str] = None
     unresolved: bool = False

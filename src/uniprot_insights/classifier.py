@@ -97,6 +97,8 @@ def classify_entry(entry: ExtractedEntry, rules: List[Rule]) -> ClassificationRe
                 confidence=_confidence_from_source(source, is_specific=True),
                 evidence=source,
                 matched_rule=rule.name,
+                matched_pattern=pattern,
+                pattern_source=source,
                 unresolved=False,
             )
 
@@ -112,6 +114,8 @@ def classify_entry(entry: ExtractedEntry, rules: List[Rule]) -> ClassificationRe
                 confidence="low",
                 evidence="broad_match",
                 matched_rule=rule.name,
+                matched_pattern=pattern,
+                pattern_source=_matching_source(entry, pattern),
                 unresolved=True,
             )
 
@@ -125,6 +129,8 @@ def classify_entry(entry: ExtractedEntry, rules: List[Rule]) -> ClassificationRe
             confidence="none",
             evidence="rule_match",
             matched_rule=rule.name,
+            matched_pattern=pattern,
+            pattern_source=_matching_source(entry, pattern),
             unresolved=True,
         )
 
@@ -138,5 +144,7 @@ def classify_entry(entry: ExtractedEntry, rules: List[Rule]) -> ClassificationRe
         confidence="none",
         evidence="no_match",
         matched_rule=None,
+        matched_pattern=None,
+        pattern_source=None,
         unresolved=False,
     )
