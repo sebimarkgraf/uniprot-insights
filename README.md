@@ -60,6 +60,16 @@ uniprot-insights classify-id P12345 Q67890
 uniprot-insights classify-file proteins.csv --column accession --output classified.csv
 ```
 
+To extract entries that were not classified, use `--only-unclassified`. In output files,
+"not classified" corresponds to `subgroup=unclassified`.
+
+```bash
+uniprot-insights classify-file proteins.csv \
+  --column accession \
+  --only-unclassified \
+  --output unclassified.csv
+```
+
 ### Dump the raw UniProt payload
 
 ```bash
@@ -108,6 +118,9 @@ For each rule:
 - glutenin subtype match: `glutenin_unspecified`
 - prolamin-only match: `prolamin_unspecified`
 - no match: `unclassified`
+
+Use `dump-entry` on an accession with `subgroup=unclassified` to inspect the source UniProt
+payload when debugging missing classifications.
 
 ## Development
 

@@ -84,6 +84,14 @@ def _write_csv(
         out_handle.close()
 
 
+def _filter_unclassified(
+    results: List[ClassificationResult], *, only_unclassified: bool
+) -> List[ClassificationResult]:
+    if not only_unclassified:
+        return results
+    return [result for result in results if result.subgroup == "unclassified"]
+
+
 @app.command("classify-id")
 def classify_id(
     accessions: List[str] = typer.Argument(
@@ -125,6 +133,11 @@ def classify_id(
     verbose: bool = typer.Option(
         False, "--verbose", help="Include matching pattern diagnostics"
     ),
+    only_unclassified: bool = typer.Option(
+        False,
+        "--only-unclassified",
+        help="Write only rows where subgroup is 'unclassified' (not classified)",
+    ),
 ):
     try:
         if strategy == "file":
@@ -148,6 +161,7 @@ def classify_id(
             client=client,
             strict=fail_fast,
         )
+        results = _filter_unclassified(results, only_unclassified=only_unclassified)
         _write_csv(results, include_debug=verbose, quiet_errors=quiet_errors)
     except (RuleValidationError, UniProtAPIError, UniProtNotFoundError) as exc:
         typer.echo(str(exc), err=True)
@@ -195,6 +209,11 @@ def classify_file(
     verbose: bool = typer.Option(
         False, "--verbose", help="Include matching pattern diagnostics"
     ),
+    only_unclassified: bool = typer.Option(
+        False,
+        "--only-unclassified",
+        help="Write only rows where subgroup is 'unclassified' (not classified)",
+    ),
 ):
     try:
         client = _build_client(base_url=base_url, timeout=timeout, cache_path=cache_dir)
@@ -216,6 +235,7 @@ def classify_file(
             client=client,
             strict=fail_fast,
         )
+        results = _filter_unclassified(results, only_unclassified=only_unclassified)
         _write_csv(
             results, output=output, include_debug=verbose, quiet_errors=quiet_errors
         )

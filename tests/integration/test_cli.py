@@ -84,6 +84,28 @@ def test_classify_id_default_behavior_continues_on_missing_accession(
     assert rows[1]["annotation_error"] != ""
 
 
+def test_classify_id_only_unclassified_filters_stdout_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixtures = {
+        "P22222": _load_fixture("omega5_gliadin.json"),
+    }
+    client = _build_client_with_fixtures(fixtures)
+    monkeypatch.setattr(cli, "_build_client", lambda *_args, **_kwargs: client)
+
+    result = RUNNER.invoke(
+        cli.app, ["classify-id", "--only-unclassified", "P22222", "MISSING"]
+    )
+    assert result.exit_code == 0
+
+    rows = list(csv.DictReader(io.StringIO(result.stdout)))
+    assert len(rows) == 1
+    assert rows[0]["accession"] == "MISSING"
+    assert rows[0]["subgroup"] == "unclassified"
+    assert rows[0]["evidence"] == "error"
+    assert rows[0]["annotation_error"] != ""
+
+
 def test_classify_id_fail_fast_rejects_missing_accession(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -183,6 +205,48 @@ def test_classify_file_reads_column_and_writes_output_file(
         assert reader.fieldnames == cli.CSV_HEADERS
         rows = list(reader)
     assert len(rows) == 2
+
+
+@pytest.mark.integration
+def test_classify_file_only_unclassified_writes_filtered_output(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixtures = {
+        "P22222": _load_fixture("omega5_gliadin.json"),
+        "Q77777": _load_fixture("non_supported_gliadin.json"),
+    }
+    client = _build_client_with_fixtures(fixtures)
+    monkeypatch.setattr(cli, "_build_client", lambda *_args, **_kwargs: client)
+
+    input_csv = tmp_path / "input.csv"
+    input_csv.write_text("accession\nP22222\nQ77777\nMISSING\n", encoding="utf-8")
+    output_csv = tmp_path / "unclassified.csv"
+
+    result = RUNNER.invoke(
+        cli.app,
+        [
+            "classify-file",
+            str(input_csv),
+            "--only-unclassified",
+            "--output",
+            str(output_csv),
+        ],
+    )
+    assert result.exit_code == 0
+
+    with output_csv.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        assert reader.fieldnames == cli.CSV_HEADERS
+        rows = list(reader)
+
+    assert len(rows) == 2
+    assert [row["accession"] for row in rows] == ["Q77777", "MISSING"]
+    assert all(row["subgroup"] == "unclassified" for row in rows)
+    assert rows[0]["evidence"] == "no_match"
+    assert rows[0]["annotation_error"] == ""
+    assert rows[1]["evidence"] == "error"
+    assert rows[1]["annotation_error"] != ""
 
 
 @pytest.mark.integration
