@@ -39,3 +39,9 @@ Fallback classes:
 - `prolamin_unspecified`
 - `unclassified`
 
+The packaged rules currently cover:
+
+- Wheat gliadin and glutenin families.
+- Related cereal prolamins such as secalins and maize gamma prolamins.
+- Selected cereal seed-defense families including amylase/trypsin inhibitors,
+  lipid-transfer proteins, puroindolines, and thionins.

@@ -14,7 +14,9 @@
 - classifying entries with YAML-driven rules
 - providing a practical CLI for annotation at scale
 
-The first shipped rule set covers wheat storage protein groups (gliadin / glutenin / prolamin), while the architecture is intentionally general enough to support additional UniProt analyses later.
+The packaged rule set covers wheat storage protein groups plus related cereal storage proteins
+and selected seed-defense families, while the architecture is intentionally general enough to
+support additional UniProt analyses later.
 
 ## Installation
 

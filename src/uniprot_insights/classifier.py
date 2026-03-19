@@ -14,6 +14,13 @@ SPECIFIC_SUBGROUPS = {
     "omega_gliadin",
     "lmw_glutenin",
     "hmw_glutenin",
+    "gamma_secalin",
+    "omega_secalin",
+    "gamma_prolamin",
+    "amylase_trypsin_inhibitor",
+    "lipid_transfer_protein",
+    "puroindoline",
+    "thionin",
 }
 
 BROAD_TO_UNSPECIFIED = {

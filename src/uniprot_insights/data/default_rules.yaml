@@ -60,6 +60,39 @@
   include_patterns:
     - "high molecular weight glutenin"
     - "hmw[- ]?glutenin"
+    - "hmw[- ]?glutenin subunit r[xy]"
+    - "high molecular weight glutenin subunit [xy]"
+  exclude_patterns: []
+  confidence: high
+
+- name: gamma_secalin
+  priority: 70
+  broad_group: prolamin
+  subgroup: gamma_secalin
+  organism_regex: secale
+  include_patterns:
+    - "75k gamma secalin"
+    - "gamma[- ]secalin"
+  exclude_patterns: []
+  confidence: high
+
+- name: omega_secalin
+  priority: 80
+  broad_group: prolamin
+  subgroup: omega_secalin
+  organism_regex: secale
+  include_patterns:
+    - "omega[- ]secalin"
+  exclude_patterns: []
+  confidence: high
+
+- name: gamma_prolamin
+  priority: 90
+  broad_group: prolamin
+  subgroup: gamma_prolamin
+  organism_regex: zea
+  include_patterns:
+    - "gamma[- ]prolamin"
   exclude_patterns: []
   confidence: high
 
@@ -92,3 +125,62 @@
     - "\\bprolamin\\b"
   exclude_patterns: []
   confidence: medium
+
+- name: cereal_prolamin
+  priority: 130
+  broad_group: prolamin
+  subgroup: prolamin
+  organism_regex: secale|zea|hordeum|avena
+  include_patterns:
+    - "\\bprolamin\\b"
+  exclude_patterns: []
+  confidence: medium
+
+- name: amylase_trypsin_inhibitor
+  priority: 140
+  broad_group: amylase_trypsin_inhibitor
+  subgroup: amylase_trypsin_inhibitor
+  organism_regex: triticum|secale|hordeum|avena|zea
+  include_patterns:
+    - "alpha-amylase/trypsin inhibitor"
+    - "trypsin/alpha-amylase inhibitor"
+    - "alpha-amylase tetrameric inhibitor"
+    - "alpha-amylase inhibitor 0\\.\\d+"
+    - "dimeric alpha-amylase inhibitor"
+    - "bowman-birk type trypsin inhibitor"
+    - "\\btrypsin inhibitor\\b"
+    - "chymotrypsin inhibitor"
+  exclude_patterns: []
+  confidence: high
+
+- name: lipid_transfer_protein
+  priority: 150
+  broad_group: lipid_transfer_protein
+  subgroup: lipid_transfer_protein
+  organism_regex: triticum|secale|hordeum|avena|zea
+  include_patterns:
+    - "non-specific lipid-transfer protein"
+  exclude_patterns: []
+  confidence: high
+
+- name: puroindoline
+  priority: 160
+  broad_group: puroindoline
+  subgroup: puroindoline
+  organism_regex: triticum|secale|hordeum|avena|zea
+  include_patterns:
+    - "puroindoline"
+    - "grain softness protein"
+  exclude_patterns: []
+  confidence: high
+
+- name: thionin
+  priority: 170
+  broad_group: thionin
+  subgroup: thionin
+  organism_regex: triticum|secale|hordeum|avena|zea
+  include_patterns:
+    - "thionin"
+    - "purothionin"
+  exclude_patterns: []
+  confidence: high

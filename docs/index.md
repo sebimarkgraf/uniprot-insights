@@ -7,8 +7,8 @@ entries, extracting normalized annotations, and classifying proteins with a YAML
 
 - CLI commands for batch or single-entry classification.
 - A reusable API for annotation, rule loading, extraction, and classification.
-- A default rule set for wheat storage protein groups (gliadin, glutenin, prolamin),
-  with room to add additional rule files.
+- A default rule set for wheat storage proteins, related cereal storage proteins,
+  and selected cereal seed-defense families, with room to add additional rule files.
 
 ## Get started
 
@@ -20,4 +20,3 @@ uniprot-insights classify-id P12345
 ```
 
 For Python usage, see [Usage](usage.md).
-
