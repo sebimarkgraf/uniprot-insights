@@ -17,6 +17,7 @@ SPECIFIC_SUBGROUPS = {
     "gamma_secalin",
     "omega_secalin",
     "gamma_prolamin",
+    "uncharacterized_protein",
     "amylase_trypsin_inhibitor",
     "lipid_transfer_protein",
     "puroindoline",

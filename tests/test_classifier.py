@@ -81,18 +81,6 @@ def test_classify_related_cereal_storage_families() -> None:
     assert gamma_prolamin_result.subgroup == "gamma_prolamin"
     assert gamma_prolamin_result.broad_group == "prolamin"
 
-    cereal_prolamin = {
-        "primaryAccession": "M22222",
-        "uniProtkbId": "MAIZE_PROLAMIN",
-        "proteinDescription": {
-            "recommendedName": {"fullName": {"value": "Prolamin seed storage protein"}}
-        },
-        "organism": {"scientificName": "Zea mays"},
-    }
-    cereal_prolamin_result = classify_entry(extract_entry(cereal_prolamin), rules)
-    assert cereal_prolamin_result.subgroup == "prolamin_unspecified"
-    assert cereal_prolamin_result.broad_group == "prolamin"
-
 
 def test_classify_expanded_hmw_glutenin_variants() -> None:
     rules = load_rules(RULE_PATH)
@@ -151,68 +139,27 @@ def test_classify_fallback_gliadin_glutenin_prolamin() -> None:
     data_prolamin["uniProtkbId"] = "BROAD_PROLAMIN"
     data_prolamin["keywords"] = [{"value": "Prolamin"}]
     result_prolamin = classify_entry(extract_entry(data_prolamin), rules)
-    assert result_prolamin.subgroup == "prolamin_unspecified"
+    assert result_prolamin.subgroup == "gliadin_unspecified"
+    assert result_prolamin.broad_group == "gliadin"
 
 
-def test_classify_seed_defense_families() -> None:
+def test_classify_uncharacterized_protein_as_resolved_group() -> None:
     rules = load_rules(RULE_PATH)
+    data = {
+        "primaryAccession": "U11111",
+        "uniProtkbId": "UNCHARACTERIZED_1",
+        "proteinDescription": {
+            "recommendedName": {"fullName": {"value": "Uncharacterized protein"}}
+        },
+        "organism": {"scientificName": "Triticum aestivum"},
+    }
 
-    families = [
-        (
-            {
-                "primaryAccession": "D11111",
-                "uniProtkbId": "ATI_CM3",
-                "proteinDescription": {
-                    "recommendedName": {
-                        "fullName": {"value": "Alpha-amylase/trypsin inhibitor CM3"}
-                    }
-                },
-                "organism": {"scientificName": "Triticum aestivum"},
-            },
-            "amylase_trypsin_inhibitor",
-        ),
-        (
-            {
-                "primaryAccession": "D22222",
-                "uniProtkbId": "LTP1",
-                "proteinDescription": {
-                    "recommendedName": {
-                        "fullName": {"value": "Non-specific lipid-transfer protein"}
-                    }
-                },
-                "organism": {"scientificName": "Triticum aestivum"},
-            },
-            "lipid_transfer_protein",
-        ),
-        (
-            {
-                "primaryAccession": "D33333",
-                "uniProtkbId": "PIN_A",
-                "proteinDescription": {
-                    "recommendedName": {"fullName": {"value": "Puroindoline-A"}}
-                },
-                "organism": {"scientificName": "Triticum aestivum"},
-            },
-            "puroindoline",
-        ),
-        (
-            {
-                "primaryAccession": "D44444",
-                "uniProtkbId": "THIONIN_1",
-                "proteinDescription": {
-                    "recommendedName": {"fullName": {"value": "Purothionin A-1"}}
-                },
-                "organism": {"scientificName": "Triticum aestivum"},
-            },
-            "thionin",
-        ),
-    ]
-
-    for data, expected_subgroup in families:
-        result = classify_entry(extract_entry(data), rules)
-        assert result.subgroup == expected_subgroup
-        assert result.broad_group == expected_subgroup
-        assert result.confidence == "high"
+    result = classify_entry(extract_entry(data), rules)
+    assert result.broad_group == "uncharacterized_protein"
+    assert result.subgroup == "uncharacterized_protein"
+    assert result.evidence == "protein_name"
+    assert result.confidence == "high"
+    assert result.unresolved is False
 
 
 def test_classify_ambiguous_prolamin_and_unsupported_organism() -> None:
@@ -228,15 +175,13 @@ def test_classify_ambiguous_prolamin_and_unsupported_organism() -> None:
     assert result_unsupported.subgroup == "unclassified"
 
 
-def test_non_cereal_lipid_transfer_protein_stays_unclassified() -> None:
+def test_non_matching_named_protein_stays_unclassified() -> None:
     rules = load_rules(RULE_PATH)
     data = {
         "primaryAccession": "N11111",
-        "uniProtkbId": "ARABIDOPSIS_LTP",
+        "uniProtkbId": "ARABIDOPSIS_NAMED",
         "proteinDescription": {
-            "recommendedName": {
-                "fullName": {"value": "Non-specific lipid-transfer protein"}
-            }
+            "recommendedName": {"fullName": {"value": "Cellulose synthase"}}
         },
         "organism": {"scientificName": "Arabidopsis thaliana"},
     }

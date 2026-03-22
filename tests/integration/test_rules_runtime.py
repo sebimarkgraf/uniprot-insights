@@ -14,10 +14,11 @@ def test_default_rules_are_loadable_from_packaged_resources() -> None:
 
 
 @pytest.mark.integration
-def test_specific_storage_rules_precede_generic_prolamin_rules() -> None:
+def test_specific_rules_precede_broad_and_uncharacterized_rules() -> None:
     rules = load_rules()
     priorities = {rule.name: rule.priority for rule in rules}
 
-    assert priorities["gamma_secalin"] < priorities["cereal_prolamin"]
-    assert priorities["omega_secalin"] < priorities["cereal_prolamin"]
-    assert priorities["gamma_prolamin"] < priorities["cereal_prolamin"]
+    assert priorities["omega_5_gliadin"] < priorities["gliadin"]
+    assert priorities["gamma_gliadin"] < priorities["gliadin"]
+    assert priorities["hmw_glutenin"] < priorities["glutenin"]
+    assert priorities["glutenin"] < priorities["uncharacterized_protein"]

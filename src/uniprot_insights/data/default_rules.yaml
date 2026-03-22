@@ -103,6 +103,7 @@
   organism_regex: triticum
   include_patterns:
     - "\\bgliadin\\b"
+    - "\\bprolamin\\b"
   exclude_patterns: []
   confidence: medium
 
@@ -116,71 +117,11 @@
   exclude_patterns: []
   confidence: medium
 
-- name: prolamin
+- name: uncharacterized_protein
   priority: 120
-  broad_group: prolamin
-  subgroup: prolamin
-  organism_regex: triticum
+  broad_group: uncharacterized_protein
+  subgroup: uncharacterized_protein
   include_patterns:
-    - "\\bprolamin\\b"
-  exclude_patterns: []
-  confidence: medium
-
-- name: cereal_prolamin
-  priority: 130
-  broad_group: prolamin
-  subgroup: prolamin
-  organism_regex: secale|zea|hordeum|avena
-  include_patterns:
-    - "\\bprolamin\\b"
-  exclude_patterns: []
-  confidence: medium
-
-- name: amylase_trypsin_inhibitor
-  priority: 140
-  broad_group: amylase_trypsin_inhibitor
-  subgroup: amylase_trypsin_inhibitor
-  organism_regex: triticum|secale|hordeum|avena|zea
-  include_patterns:
-    - "alpha-amylase/trypsin inhibitor"
-    - "trypsin/alpha-amylase inhibitor"
-    - "alpha-amylase tetrameric inhibitor"
-    - "alpha-amylase inhibitor 0\\.\\d+"
-    - "dimeric alpha-amylase inhibitor"
-    - "bowman-birk type trypsin inhibitor"
-    - "\\btrypsin inhibitor\\b"
-    - "chymotrypsin inhibitor"
-  exclude_patterns: []
-  confidence: high
-
-- name: lipid_transfer_protein
-  priority: 150
-  broad_group: lipid_transfer_protein
-  subgroup: lipid_transfer_protein
-  organism_regex: triticum|secale|hordeum|avena|zea
-  include_patterns:
-    - "non-specific lipid-transfer protein"
-  exclude_patterns: []
-  confidence: high
-
-- name: puroindoline
-  priority: 160
-  broad_group: puroindoline
-  subgroup: puroindoline
-  organism_regex: triticum|secale|hordeum|avena|zea
-  include_patterns:
-    - "puroindoline"
-    - "grain softness protein"
-  exclude_patterns: []
-  confidence: high
-
-- name: thionin
-  priority: 170
-  broad_group: thionin
-  subgroup: thionin
-  organism_regex: triticum|secale|hordeum|avena|zea
-  include_patterns:
-    - "thionin"
-    - "purothionin"
+    - "\\buncharacterized protein\\b"
   exclude_patterns: []
   confidence: high

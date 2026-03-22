@@ -14,9 +14,10 @@
 - classifying entries with YAML-driven rules
 - providing a practical CLI for annotation at scale
 
-The packaged rule set covers wheat storage protein groups plus related cereal storage proteins
-and selected seed-defense families, while the architecture is intentionally general enough to
-support additional UniProt analyses later.
+The packaged rule set covers wheat storage protein groups, related cereal storage proteins,
+and a dedicated `uncharacterized_protein` class for entries explicitly annotated as
+`Uncharacterized protein`, while the architecture is intentionally general enough to support
+additional UniProt analyses later.
 
 ## Installation
 
@@ -119,6 +120,7 @@ For each rule:
 - gliadin subtype match: `gliadin_unspecified`
 - glutenin subtype match: `glutenin_unspecified`
 - prolamin-only match: `prolamin_unspecified`
+- explicit `Uncharacterized protein` annotation: `uncharacterized_protein`
 - no match: `unclassified`
 
 Use `dump-entry` on an accession with `subgroup=unclassified` to inspect the source UniProt
