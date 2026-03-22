@@ -112,6 +112,148 @@ def test_classify_expanded_hmw_glutenin_variants() -> None:
     assert y_result.confidence == "high"
 
 
+def test_classify_reported_unclassified_accessions() -> None:
+    rules = load_rules(RULE_PATH)
+
+    cases = [
+        (
+            {
+                "primaryAccession": "B6UKJ6",
+                "uniProtkbId": "B6UKJ6_AEGTA",
+                "proteinDescription": {
+                    "submissionNames": [{"fullName": {"value": "Gamma-gliadin"}}]
+                },
+                "organism": {"scientificName": "Aegilops tauschii"},
+            },
+            "gamma_gliadin",
+            "gliadin",
+            False,
+        ),
+        (
+            {
+                "primaryAccession": "H8Y0K4",
+                "uniProtkbId": "H8Y0K4_SECCE",
+                "proteinDescription": {
+                    "submissionNames": [{"fullName": {"value": "Gamma prolamin"}}]
+                },
+                "organism": {"scientificName": "Secale cereale subsp. afghanicum"},
+            },
+            "gamma_prolamin",
+            "prolamin",
+            False,
+        ),
+        (
+            {
+                "primaryAccession": "H8Y0N7",
+                "uniProtkbId": "H8Y0N7_SECCE",
+                "proteinDescription": {
+                    "submissionNames": [
+                        {"fullName": {"value": "Gamma prolamin (Fragment)"}}
+                    ]
+                },
+                "organism": {"scientificName": "Secale cereale subsp. afghanicum"},
+            },
+            "gamma_prolamin",
+            "prolamin",
+            False,
+        ),
+        (
+            {
+                "primaryAccession": "C4NFQ0",
+                "uniProtkbId": "C4NFQ0_WHEAT",
+                "proteinDescription": {
+                    "submissionNames": [{"fullName": {"value": "Omega secalin"}}]
+                },
+                "organism": {"scientificName": "Triticum aestivum"},
+            },
+            "omega_secalin",
+            "prolamin",
+            False,
+        ),
+        (
+            {
+                "primaryAccession": "A0A159KI56",
+                "uniProtkbId": "A0A159KI56_WHEAT",
+                "proteinDescription": {
+                    "submissionNames": [{"fullName": {"value": "Omega-secalin"}}]
+                },
+                "organism": {"scientificName": "Triticum aestivum"},
+            },
+            "omega_secalin",
+            "prolamin",
+            False,
+        ),
+        (
+            {
+                "primaryAccession": "Q93WF0",
+                "uniProtkbId": "Q93WF0_SECCE",
+                "proteinDescription": {
+                    "submissionNames": [
+                        {
+                            "fullName": {
+                                "value": "High molecular weight glutenin subunit x"
+                            }
+                        }
+                    ]
+                },
+                "organism": {"scientificName": "Secale cereale"},
+            },
+            "hmw_glutenin",
+            "glutenin",
+            False,
+        ),
+        (
+            {
+                "primaryAccession": "D3XQB7",
+                "uniProtkbId": "D3XQB7_SECCE",
+                "proteinDescription": {
+                    "submissionNames": [
+                        {"fullName": {"value": "HMW glutenin subunit Rx"}}
+                    ]
+                },
+                "organism": {"scientificName": "Secale cereale"},
+            },
+            "hmw_glutenin",
+            "glutenin",
+            False,
+        ),
+        (
+            {
+                "primaryAccession": "D3XQB8",
+                "uniProtkbId": "D3XQB8_SECCE",
+                "proteinDescription": {
+                    "submissionNames": [
+                        {"fullName": {"value": "HMW glutenin subunit Ry"}}
+                    ]
+                },
+                "organism": {"scientificName": "Secale cereale"},
+            },
+            "hmw_glutenin",
+            "glutenin",
+            False,
+        ),
+        (
+            {
+                "primaryAccession": "A5JSA3",
+                "uniProtkbId": "A5JSA3_AEGTA",
+                "proteinDescription": {
+                    "recommendedName": {"fullName": {"value": "Prolamin"}}
+                },
+                "organism": {"scientificName": "Aegilops tauschii"},
+            },
+            "gliadin_unspecified",
+            "gliadin",
+            True,
+        ),
+    ]
+
+    for entry, expected_subgroup, expected_broad_group, expected_unresolved in cases:
+        result = classify_entry(extract_entry(entry), rules)
+        assert result.subgroup == expected_subgroup
+        assert result.broad_group == expected_broad_group
+        assert result.unresolved is expected_unresolved
+
+
 def test_classify_fallback_gliadin_glutenin_prolamin() -> None:
     rules = load_rules(RULE_PATH)
     data_gliadin = json.loads(

@@ -24,7 +24,7 @@
   priority: 30
   broad_group: gliadin
   subgroup: gamma_gliadin
-  organism_regex: triticum
+  organism_regex: triticum|aegilops
   include_patterns:
     - "gamma[- ]?gliadin"
   exclude_patterns: []
@@ -56,7 +56,7 @@
   priority: 60
   broad_group: glutenin
   subgroup: hmw_glutenin
-  organism_regex: triticum
+  organism_regex: triticum|secale
   include_patterns:
     - "high molecular weight glutenin"
     - "hmw[- ]?glutenin"
@@ -80,7 +80,7 @@
   priority: 80
   broad_group: prolamin
   subgroup: omega_secalin
-  organism_regex: secale
+  organism_regex: secale|triticum
   include_patterns:
     - "omega[- ]secalin"
   exclude_patterns: []
@@ -90,7 +90,7 @@
   priority: 90
   broad_group: prolamin
   subgroup: gamma_prolamin
-  organism_regex: zea
+  organism_regex: zea|secale
   include_patterns:
     - "gamma[- ]prolamin"
   exclude_patterns: []
@@ -100,7 +100,7 @@
   priority: 100
   broad_group: gliadin
   subgroup: gliadin
-  organism_regex: triticum
+  organism_regex: triticum|aegilops
   include_patterns:
     - "\\bgliadin\\b"
     - "\\bprolamin\\b"
