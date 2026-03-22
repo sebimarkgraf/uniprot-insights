@@ -175,10 +175,11 @@ def test_summarize_batch() -> None:
         ["P22222", "Q33333", "Q77777"], client=client, rules_file=RULE_PATH
     )
     summary = summarize_batch(results)
-    assert summary["broad_group"]["gliadin"] == 1
+    assert summary["broad_group"]["gliadin"] == 2
     assert summary["broad_group"]["glutenin"] == 1
-    assert summary["broad_group"]["unclassified"] == 1
-    assert summary["unresolved"][False] == 3
+    assert summary["broad_group"].get("unclassified", 0) == 0
+    assert summary["unresolved"][False] == 2
+    assert summary["unresolved"][True] == 1
 
 
 def test_annotate_dataframe_without_pandas_raises_clear_error(

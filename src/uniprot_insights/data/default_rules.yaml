@@ -2,7 +2,6 @@
   priority: 10
   broad_group: gliadin
   subgroup: omega_5_gliadin
-  organism_regex: triticum
   include_patterns:
     - "omega[- ]?5 gliadin"
   exclude_patterns: []
@@ -12,7 +11,6 @@
   priority: 20
   broad_group: gliadin
   subgroup: alpha_beta_gliadin
-  organism_regex: triticum
   include_patterns:
     - "alpha/beta[- ]?gliadin"
     - "alpha[- ]?gliadin"
@@ -24,7 +22,6 @@
   priority: 30
   broad_group: gliadin
   subgroup: gamma_gliadin
-  organism_regex: triticum|aegilops
   include_patterns:
     - "gamma[- ]?gliadin"
   exclude_patterns: []
@@ -34,7 +31,6 @@
   priority: 40
   broad_group: gliadin
   subgroup: omega_gliadin
-  organism_regex: triticum
   include_patterns:
     - "omega[- ]?gliadin"
   exclude_patterns:
@@ -45,10 +41,12 @@
   priority: 50
   broad_group: glutenin
   subgroup: lmw_glutenin
-  organism_regex: triticum
   include_patterns:
-    - "low molecular weight glutenin"
-    - "lmw[- ]?glutenin"
+    - "low[- ]molecular[- ]weight glutenin"
+    - "glutenin,? low[- ]molecular[- ]weight subunit(?: [a-z0-9.-]+)?"
+    - "low molecular weight glutinin"
+    - "lmw(?:-[a-z0-9]+)?[- ]?(?:gs|glutenin)"
+    - "\\blmw-[abd]\\d+\\b"
   exclude_patterns: []
   confidence: high
 
@@ -56,12 +54,14 @@
   priority: 60
   broad_group: glutenin
   subgroup: hmw_glutenin
-  organism_regex: triticum|secale
   include_patterns:
     - "high molecular weight glutenin"
-    - "hmw[- ]?glutenin"
+    - "high[- ]molecular[- ]weight glutenin"
+    - "glutenin,? high[- ]molecular[- ]weight subunit(?: [a-z0-9.-]+)?"
+    - "hmw[- ]?(?:gs|glutenin)"
     - "hmw[- ]?glutenin subunit r[xy]"
     - "high molecular weight glutenin subunit [xy]"
+    - "hmw[- ]?gs [bd]?[xy]\\d+(?:\\.\\d+)?"
   exclude_patterns: []
   confidence: high
 
@@ -69,7 +69,6 @@
   priority: 70
   broad_group: prolamin
   subgroup: gamma_secalin
-  organism_regex: secale
   include_patterns:
     - "75k gamma secalin"
     - "gamma[- ]secalin"
@@ -80,7 +79,6 @@
   priority: 80
   broad_group: prolamin
   subgroup: omega_secalin
-  organism_regex: secale|triticum
   include_patterns:
     - "omega[- ]secalin"
   exclude_patterns: []
@@ -90,7 +88,6 @@
   priority: 90
   broad_group: prolamin
   subgroup: gamma_prolamin
-  organism_regex: zea|secale
   include_patterns:
     - "gamma[- ]prolamin"
   exclude_patterns: []
@@ -100,21 +97,32 @@
   priority: 100
   broad_group: gliadin
   subgroup: gliadin
-  organism_regex: triticum|aegilops
   include_patterns:
     - "\\bgliadin\\b"
     - "\\bprolamin\\b"
-  exclude_patterns: []
+  exclude_patterns:
+    - "\\bglutenin\\b"
+    - "\\b(?:low|high)[- ]molecular[- ]weight glutenin\\b"
+    - "\\blow molecular weight glutinin\\b"
+    - "\\blmw[- ]?(?:gs|glutenin)\\b"
+    - "\\blmw-[abd]\\d+\\b"
+    - "\\bhmw[- ]?(?:gs|glutenin)\\b"
+    - "\\bhmw[- ]?gs [bd]?[xy]\\d+(?:\\.\\d+)?\\b"
+    - "\\b(?:75k )?gamma[- ]secalin\\b"
+    - "\\bomega[- ]secalin\\b"
+    - "\\bavenin[- ]like\\b"
+    - "bifunctional inhibitor/plant lipid transfer protein/seed storage helical"
   confidence: medium
 
 - name: glutenin
   priority: 110
   broad_group: glutenin
   subgroup: glutenin
-  organism_regex: triticum
   include_patterns:
     - "\\bglutenin\\b"
-  exclude_patterns: []
+  exclude_patterns:
+    - "\\bavenin[- ]like\\b"
+    - "bifunctional inhibitor/plant lipid transfer protein/seed storage helical"
   confidence: medium
 
 - name: uncharacterized_protein

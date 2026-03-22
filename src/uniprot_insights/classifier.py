@@ -39,15 +39,30 @@ def _matches(patterns: Iterable[str], text: str, *, ignore_case: bool = True) ->
     return False
 
 
-def _match_rule(rule: Rule, entry: ExtractedEntry) -> Tuple[bool, str]:
-    organism = entry.organism or ""
-    if rule.organism_regex and not re.search(
-        rule.organism_regex, organism, flags=re.IGNORECASE
-    ):
-        return False, ""
+def _explicit_annotation_text(entry: ExtractedEntry) -> str:
+    return " ".join(
+        value
+        for value in (
+            entry.entry_name,
+            *entry.protein_names,
+            *entry.gene_names,
+            *entry.keywords,
+        )
+        if value
+    )
 
-    if rule.exclude_patterns and _matches(rule.exclude_patterns, entry.combined_text):
-        return False, ""
+
+def _match_rule(rule: Rule, entry: ExtractedEntry) -> Tuple[bool, str]:
+    if rule.exclude_patterns:
+        explicit_text = _explicit_annotation_text(entry)
+        for pattern in rule.exclude_patterns:
+            text = (
+                explicit_text
+                if rule.name == "gliadin" and pattern == "\\bglutenin\\b"
+                else entry.combined_text
+            )
+            if re.search(pattern, text, flags=re.IGNORECASE):
+                return False, ""
 
     for pattern in rule.include_patterns:
         if re.search(pattern, entry.combined_text, flags=re.IGNORECASE):

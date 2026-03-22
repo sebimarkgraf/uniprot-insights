@@ -99,7 +99,6 @@ Rules are stored in YAML and applied by ascending `priority`.
   priority: 10
   broad_group: gliadin
   subgroup: omega_5_gliadin
-  organism_regex: triticum
   include_patterns:
     - "omega[- ]?5 gliadin"
   exclude_patterns: []
@@ -110,7 +109,6 @@ Rules are stored in YAML and applied by ascending `priority`.
 
 For each rule:
 
-- `organism_regex`, if set, must match `organism` in the extracted entry
 - at least one `include_pattern` must match `combined_text`
 - no `exclude_pattern` may match
 - first matching rule wins (priority order)

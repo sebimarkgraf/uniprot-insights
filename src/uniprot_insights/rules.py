@@ -21,6 +21,10 @@ RULE_REQUIRED_FIELDS = {
     "confidence",
 }
 
+RULE_UNSUPPORTED_FIELDS = {
+    "organism_regex",
+}
+
 
 def _default_rules_path() -> Path:
     try:
@@ -38,6 +42,11 @@ def _validate_rules_item(item: Any, index: int) -> Rule:
         raise RuleValidationError(
             f"Rule at position {index} missing fields: {sorted(missing)}"
         )
+    unsupported = RULE_UNSUPPORTED_FIELDS & set(item)
+    if unsupported:
+        raise RuleValidationError(
+            f"Rule at position {index} has unsupported fields: {sorted(unsupported)}"
+        )
 
     name = item.get("name")
     if not isinstance(name, str) or not name.strip():
@@ -54,17 +63,6 @@ def _validate_rules_item(item: Any, index: int) -> Rule:
     subgroup = item.get("subgroup")
     if not isinstance(subgroup, str) or not subgroup.strip():
         raise RuleValidationError(f"Rule {name} has invalid subgroup")
-
-    organism_regex = item.get("organism_regex")
-    if organism_regex is not None and not isinstance(organism_regex, str):
-        raise RuleValidationError(f"Rule {name} has invalid organism_regex")
-    if isinstance(organism_regex, str) and organism_regex.strip():
-        try:
-            re.compile(organism_regex, flags=re.IGNORECASE)
-        except re.error as exc:
-            raise RuleValidationError(
-                f"Rule {name} has invalid organism_regex: {exc}"
-            ) from exc
 
     include_patterns = item.get("include_patterns")
     if not isinstance(include_patterns, list) or not include_patterns:
@@ -105,7 +103,6 @@ def _validate_rules_item(item: Any, index: int) -> Rule:
         priority=priority,
         broad_group=broad_group,
         subgroup=subgroup,
-        organism_regex=organism_regex if organism_regex else None,
         include_patterns=include_patterns,
         exclude_patterns=exclude_patterns,
         confidence=confidence,

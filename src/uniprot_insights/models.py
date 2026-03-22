@@ -22,7 +22,6 @@ class Rule:
     priority: int
     broad_group: str
     subgroup: str
-    organism_regex: Optional[str]
     include_patterns: List[str]
     exclude_patterns: List[str]
     confidence: str

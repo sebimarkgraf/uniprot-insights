@@ -240,13 +240,11 @@ def test_classify_file_only_unclassified_writes_filtered_output(
         assert reader.fieldnames == cli.CSV_HEADERS
         rows = list(reader)
 
-    assert len(rows) == 2
-    assert [row["accession"] for row in rows] == ["Q77777", "MISSING"]
-    assert all(row["subgroup"] == "unclassified" for row in rows)
-    assert rows[0]["evidence"] == "no_match"
-    assert rows[0]["annotation_error"] == ""
-    assert rows[1]["evidence"] == "error"
-    assert rows[1]["annotation_error"] != ""
+    assert len(rows) == 1
+    assert rows[0]["accession"] == "MISSING"
+    assert rows[0]["subgroup"] == "unclassified"
+    assert rows[0]["evidence"] == "error"
+    assert rows[0]["annotation_error"] != ""
 
 
 @pytest.mark.integration
